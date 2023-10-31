@@ -37,28 +37,34 @@ async def start_session():
     login_button = driver.find_element(By.XPATH, '//div[text()="Log in"]')
     login_button.click()
     time.sleep(3)
-    google = driver.find_element(By.XPATH, '//button[@data-provider="google"]')
-    google.click()
+
     # find email field
+    email = driver.find_element(By.XPATH, '//input[@id="username"]')
+    email.send_keys(os.getenv("EMAIL"))
+    
+    # Find Continuew button
+    cont = driver.find_element(By.XPATH, '//button[text()="Continue"]')
+    cont.click()
     time.sleep(3)
-    email = driver.find_element(By.XPATH, '//input[@type="email"]')
-    email.send_keys(os.getenv("GOOGLE_EMAIL"))
-    # Find next button
-    next_button = driver.find_element(By.XPATH, '//span[text()="Next"]')
-    next_button.click()
-    time.sleep(3)
+
     # Find password field
-    password = driver.find_element(By.XPATH, '//input[@type="password"]')
-    password.send_keys(os.getenv("GOOGLE_PASSWORD"))
-    # Find next button
-    next_button = driver.find_element(By.XPATH, '//span[text()="Next"]')
-    next_button.click()
+    password = driver.find_element(By.XPATH, '//input[@name="password"]')
+    password.send_keys(os.getenv("PASSWORD"))
+    password.send_keys(Keys.ENTER)
     time.sleep(3)
-    # Wait for user to validate login
-    input("Press Enter to continue...")
+
     # Find the Okay, let’s go button
     okay_button = driver.find_element(By.XPATH, '//div[text()="Okay, let’s go"]')
     okay_button.click()
+
+    SESSION_NAME = os.getenv("SESSION_NAME")
+    if SESSION_NAME:
+        session_name = driver.find_element(By.XPATH, f'//div[text()={SESSION_NAME}]')
+        session_name.click()
+    else:
+        gpt4_button = driver.find_element(By.XPATH, '//span[text()="GPT-4"]')
+        gpt4_button.click()
+
     # Setup OK
     return {"status": "Selenium session started!"}
 
@@ -136,4 +142,4 @@ async def stop_session():
 if __name__ == "__main__":
     import uvicorn
 
-    uvicorn.run(app, host="0.0.0.0", port=8000)
+    uvicorn.run(app, port=8000)
