@@ -45,31 +45,32 @@ async def start_session():
     # Find Continuew button
     cont = driver.find_element(By.XPATH, '//button[text()="Continue"]')
     cont.click()
-    time.sleep(3)
+    time.sleep(1)
 
     # Find password field
     password = driver.find_element(By.XPATH, '//input[@name="password"]')
     password.send_keys(os.getenv("PASSWORD"))
     password.send_keys(Keys.ENTER)
-    time.sleep(3)
+    time.sleep(5)
 
     # Find the Okay, let’s go button
     okay_button = driver.find_element(By.XPATH, '//div[text()="Okay, let’s go"]')
     okay_button.click()
 
     SESSION_NAME = os.getenv("SESSION_NAME")
+    time.sleep(3)
     if SESSION_NAME:
-        session_name = driver.find_element(By.XPATH, f'//div[text()={SESSION_NAME}]')
+        session_name = driver.find_element(By.XPATH, f'//div[text()="{SESSION_NAME}"]')
         session_name.click()
     else:
         gpt4_button = driver.find_element(By.XPATH, '//span[text()="GPT-4"]')
         gpt4_button.click()
 
     # Setup OK
-    return {"status": "Selenium session started!"}
+    return {"status": "Success", "result": "Selenium session started!"}
 
 
-@app.post("/action/")
+@app.post("/action")
 async def perform_action(payload: Payload):
     try:
         # Download the image from the provided URL
@@ -83,8 +84,8 @@ async def perform_action(payload: Payload):
                 image_file.write(chunk)
 
         # open new chat
-        driver.get("https://chat.openai.com/?model=gpt-4")
-        time.sleep(5)
+        # driver.get("https://chat.openai.com/?model=gpt-4")
+        # time.sleep(5)
 
         # Make the input file element visible
         driver.execute_script(
@@ -136,7 +137,7 @@ async def perform_action(payload: Payload):
 @app.get("/stop")
 async def stop_session():
     driver.quit()
-    return {"status": "Selenium session closed!"}
+    return {"status": "Success", "result": "Selenium session closed!"}
 
 
 if __name__ == "__main__":
