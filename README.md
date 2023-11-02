@@ -9,11 +9,12 @@ Works with google authentification. If you use a different login method, please 
 - Install requirements:  
 `pip install -r requirements.txt`
 - Define a `.env` file
-> EMAIL=
-> 
-> PASSWORD=
-> 
-> SESSION_NAME=
+```
+EMAIL=
+PASSWORD=
+// GPT chat title, create a new one if none
+SESSION_TITLE=
+```
 
 # Usage
 - Run FastAPI server: `python main.py`
@@ -31,7 +32,7 @@ Post an image file or URL with a prompt. Example:
 ```
 Request:
 {
-    "image": "https://www.reuters.com/resizer/NLk9k89J1tfmH-B7XKd598-6j_Y=/960x0/filters:quality(80)/cloudfront-us-east-2.images.arcpublishing.com/reuters/AHF2FYISNJO55J6N35YJBZ2JYY.jpg",
+    "attachment": "https://www.reuters.com/resizer/NLk9k89J1tfmH-B7XKd598-6j_Y=/960x0/filters:quality(80)/cloudfront-us-east-2.images.arcpublishing.com/reuters/AHF2FYISNJO55J6N35YJBZ2JYY.jpg",
     "prompt": "Describe this image precisely."
 }
 

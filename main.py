@@ -23,11 +23,8 @@ app = FastAPI()
 
 
 class Payload(BaseModel):
-    image_url: str
+    attachment: str
     prompt: str
-
-
-ANSWER_FORMAT = "Answer ONLY by JSON following this format: " '{"answer": your answer}'
 
 
 @app.get("/start")
@@ -57,7 +54,7 @@ async def start_session():
     okay_button = driver.find_element(By.XPATH, '//div[text()="Okay, let’s go"]')
     okay_button.click()
 
-    SESSION_NAME = os.getenv("SESSION_NAME")
+    SESSION_NAME = os.getenv("SESSION_TITLE")
     time.sleep(3)
     if SESSION_NAME:
         session_name = driver.find_element(By.XPATH, f'//div[text()="{SESSION_NAME}"]')
@@ -73,15 +70,17 @@ async def start_session():
 @app.post("/action")
 async def perform_action(payload: Payload):
     try:
-        # Download the image from the provided URL
-        response = requests.get(payload.image_url, stream=True)
-        response.raise_for_status()
+        image_filename = os.path.join("images", os.path.basename(payload.attachment))
+        if payload.attachment.startswith('http'):
+        
+            # Download the image from the provided URL
+            response = requests.get(payload.attachment, stream=True)
+            response.raise_for_status()
 
-        # Extract image filename and save inside 'images' folder
-        image_filename = os.path.join("images", os.path.basename(payload.image_url))
-        with open(image_filename, "wb") as image_file:
-            for chunk in response.iter_content(chunk_size=8192):
-                image_file.write(chunk)
+            # Extract image filename and save inside 'images' folder
+            with open(image_filename, "wb") as image_file:
+                for chunk in response.iter_content(chunk_size=8192):
+                    image_file.write(chunk)
 
         # open new chat
         # driver.get("https://chat.openai.com/?model=gpt-4")
@@ -98,13 +97,11 @@ async def perform_action(payload: Payload):
 
         # Find prompt text area
         prompt = driver.find_element(By.XPATH, '//textarea[@id="prompt-textarea"]')
-        prompt.send_keys(payload.prompt + ANSWER_FORMAT)
+        prompt.send_keys(payload.prompt)
 
         # Find the submit button data-testid="send-button
-        submit_button = driver.find_element(
-            By.XPATH, '//button[@data-testid="send-button"]'
-        )
-        WebDriverWait(driver, 10).until(EC.element_to_be_clickable(submit_button))
+        submit_button = driver.find_element(By.XPATH, '//button[@data-testid="send-button"]')
+        WebDriverWait(driver, 20).until(EC.element_to_be_clickable(submit_button))
         prompt.send_keys(Keys.ENTER)
 
         # Wait the result
@@ -116,17 +113,17 @@ async def perform_action(payload: Payload):
         code_elements = driver.find_elements(By.TAG_NAME, "code")
         answer = code_elements[-1].text.strip() if code_elements else None
         if not answer:
-            answer_element = driver.find_element(
+            answer_elements = driver.find_elements(
                 By.CSS_SELECTOR, ".markdown.prose.w-full.break-words"
             )
-            answer = answer_element.text.strip()
+            answer = answer_elements[-1].text.strip()
 
         final_resp = {"status": "Success", "result": {}}
         if answer:
-            final_resp["result"] = json.loads(answer)
+            final_resp["result"] = answer
 
         # Cleanup
-        os.remove(os.path.abspath(image_filename))
+        # os.remove(os.path.abspath(image_filename))
 
         return final_resp
 
